@@ -6,7 +6,7 @@ from std_srvs.srv import Empty
 from std_msgs.msg import Bool
 from time import sleep
 
-rospy.init_node('estop_loop')
+rospy.init_node('rpi_estop_loop')
 
 estop_pin = rospy.get_param('~estop_pin')
 estop_service = rospy.get_param('~estop_service')

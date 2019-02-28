@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>ltu_actor_estop_loop</name>
+  <name>ltu_actor_rpi_estop_loop</name>
   <version>0.0.1</version>
   <description>
     A node to send std_srvs/Empty service requests when a broken estop loop is detected from an arduino

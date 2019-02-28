@@ -38,7 +38,7 @@ If configured, this node will listen to a specified topic of type
 
 ```xml
 <launch>
-  <node pkg="ltu_actor_estop_loop" type="run.py" name="estop_loop">
+  <node pkg="ltu_actor_rpi_estop_loop" type="run.py" name="rpi_estop_loop">
     <param name="estop_service" value="/estop/stop" />
     <param name="estop_pin" value="2" />
     <param name="signal_pin" value="3" />
