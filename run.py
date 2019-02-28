@@ -1,45 +1,43 @@
 #!/usr/bin/env python
 
 import rospy
-import Adafruit_GPIO
+from gpiozero import LineSensor, LED
+from gpiozero.pins.pigpio import PiGPIOFactory
 from std_srvs.srv import Empty
 from std_msgs.msg import Bool
-from time import sleep
+from signal import pause
 
 rospy.init_node('rpi_estop_loop')
 
-estop_pin = rospy.get_param('~estop_pin')
-estop_service = rospy.get_param('~estop_service')
-percentage_estop = rospy.get_param('~percentage', 0.5)
-num_tests = rospy.get_param('~num_tests', 50)
-sleep_time = int(rospy.get_param('~sleep_time', 15))
+hostpi           = rospy.get_param('~host', None)
+estop_pin        = rospy.get_param('~estop_pin')
+estop_service    = rospy.get_param('~estop_service')
+signal_pin       = rospy.get_param('~signal_pin', None)
+threshold        = rospy.get_param('~threshold', 0.5)
+sample_rate      = rospy.get_param('~sample_rate', 100)
 
 rospy.wait_for_service(estop_service)
 stop = rospy.ServiceProxy(estop_service, Empty)
 
-signal_pin = rospy.get_param('~signal_pin', None)
-signal_topic = rospy.get_param('~signal_topic', None)
+factory = None
+led     = None
 
-gpio = Adafruit_GPIO.get_platform_gpio()
-gpio.setup(estop_pin, Adafruit_GPIO.IN)
+if hostpi is not None:
+    factory = PiGPIOFactory(host=hostpi)
 
-
-def signal_cb(data):
-    gpio.output(signal_pin, data.data)
+loop = LineSensor(estop_pin, pin_factory=factory, threshold=threshold, sample_rate=sample_rate, pull_up=False)
 
 
-if signal_pin is not None and signal_topic is not None:
-    gpio.setup(signal_pin, Adafruit_GPIO.OUT)
-    rospy.Subscriber(signal_topic, Bool, signal_cb)
+def do_stop():
+    stop()
+    if led is not None:
+        led.on()
 
+
+if signal_pin is not None:
+    led = LED(signal_pin, pin_factory=factory)
+    loop.when_no_line = led.off
+
+loop.when_line = do_stop
 rospy.loginfo('estop_loop watching pin ' + str(estop_pin) + ' for broken loop')
-
-while not rospy.is_shutdown():
-    num_hi = 0
-    for _ in range(num_tests):
-        if gpio.input(1):
-            num_hi = num_hi + 1
-        sleep(sleep_time)
-    if (num_hi / float(num_tests)) < percentage_estop:
-        rospy.logerr_throttle(60, 'eStop triggered from broken loop')
-        stop()
+pause()

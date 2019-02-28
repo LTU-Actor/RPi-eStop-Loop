@@ -10,6 +10,6 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>rospy</depend>
   <depend>std_srvs</depend>
-  <depend>std_msgs</depends>
-  <depend>adafruit-gpio-pip</depend>
+  <depend>std_msgs</depend>
+  <depend>python-gpiozero</depend>
 </package>

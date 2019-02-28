@@ -1,7 +1,6 @@
 # eStop Loop Break Detection
 
-Detect a break in an eStop loop on platforms supported by
-[Adafruit-GPIO](https://github.com/adafruit/Adafruit_Python_GPIO)
+Detect a break in an eStop loop on RaspberryPi. Supportes remote GPIO.
 
 ### Required ROS Params
 
@@ -9,29 +8,26 @@ Detect a break in an eStop loop on platforms supported by
 
 `~estop_pin` sets the pin to listen on. It expects a True/High for all-okay and a
 False/Low for a eStop. Check with the Adafruit GPIO library for pin numbers and
-values.
+values. **Do NOT use GPIO2/3 as they have soldered-on pull-up resistors!**. The
+system needs a pull-down resistor!
 
 ### Other ROS Params
 
-`~percentage` sets the percentage of readings that can be Low without an eStop
-being triggered. This helps deal with noise in exceptionally large loops.
-Capacitors between the pin being read and ground can help a lot too. Defaults
-to 50%.
+`~host` allows specifying the remote GPIO host IP. If not set, assumed local.
 
-`~num_tests` sets the number of times a pin is polled per percentage decision.
-Defaults to 15.
+`~threshold` Defaults to 0.5. When the average of all loop values in the
+internal queue rises above this value, the loop will be considered stoped
 
-`~sleep_time` is the amount of time to sleep between pin tests in milliseconds.
-It is meant to help keep CPU usage to a minimum. Defaults to 15.
+`~sample_rate` The number of estop values to read from the device (and append
+to the internal queue) per second. Defaults to 100.
 
 ### Signal Output
 
 If configured, this node will listen to a specified topic of type
+
 `std_msgs/Bool` and output that value to a pin.
 
-`~signal_pin` the pin to set Hi/Low based on what is seen on the topic
-
-`~signal_topic` sets the topic to listen on
+`~signal_pin` the pin to set Hi/Low based on if there is eStop currently active
 
 
 ### Example launch file
@@ -40,9 +36,8 @@ If configured, this node will listen to a specified topic of type
 <launch>
   <node pkg="ltu_actor_rpi_estop_loop" type="run.py" name="rpi_estop_loop">
     <param name="estop_service" value="/estop/stop" />
-    <param name="estop_pin" value="2" />
-    <param name="signal_pin" value="3" />
-    <param name="signal_topic" value="/vehicle_active" />
+    <param name="estop_pin" value="3" />
+    <param name="signal_pin" value="4" />
   </node>
 </launch>
 ```
