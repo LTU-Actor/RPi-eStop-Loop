@@ -5,7 +5,7 @@ from gpiozero import LineSensor, LED
 from gpiozero.pins.pigpio import PiGPIOFactory
 from std_srvs.srv import Empty
 from std_msgs.msg import Bool
-from signal import pause
+from time import sleep
 
 rospy.init_node('rpi_estop_loop')
 
@@ -40,4 +40,9 @@ if signal_pin is not None:
 
 loop.when_line = do_stop
 rospy.loginfo('estop_loop watching pin ' + str(estop_pin) + ' for broken loop')
-pause()
+
+while not rospy.is_shutdown():
+    if not loop.value:
+        do_stop()
+    sleep(0.5)
+
