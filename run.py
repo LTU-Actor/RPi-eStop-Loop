@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
-from gpiozero import LineSensor, LED
+from gpiozero import LineSensor, Button, LED
 from gpiozero.pins.pigpio import PiGPIOFactory
 from std_srvs.srv import Empty
 from std_msgs.msg import Bool
@@ -13,36 +13,40 @@ hostpi           = rospy.get_param('~host', None)
 estop_pin        = rospy.get_param('~estop_pin')
 estop_service    = rospy.get_param('~estop_service')
 signal_pin       = rospy.get_param('~signal_pin', None)
+estop_pin_alt    = rospy.get_param('~estop_pin_alt', None)
 threshold        = rospy.get_param('~threshold', 0.5)
 sample_rate      = rospy.get_param('~sample_rate', 100)
+queue_len        = rospy.get_param('~queue_len', 10)
 
 rospy.wait_for_service(estop_service)
 stop = rospy.ServiceProxy(estop_service, Empty)
 
 factory = None
 led     = None
+alt_in  = None
 
 if hostpi is not None:
     factory = PiGPIOFactory(host=hostpi)
 
-loop = LineSensor(estop_pin, pin_factory=factory, threshold=threshold, sample_rate=sample_rate, pull_up=False)
-
+loop = LineSensor(estop_pin, pin_factory=factory, threshold=threshold, sample_rate=sample_rate, queue_len=queue_len, pull_up=False)
 
 def do_stop():
     stop()
-    if led is not None:
-        led.on()
 
 
 if signal_pin is not None:
     led = LED(signal_pin, pin_factory=factory)
     loop.when_no_line = led.off
+    loop.when_line = led.on
 
-loop.when_line = do_stop
+if estop_pin_alt is not None:
+    alt_in = Button(estop_pin_alt, pin_factory=factory, bounce_time=0.01, pull_up=True)
+    alt_in.when_pressed = do_stop
+
 rospy.loginfo('estop_loop watching pin ' + str(estop_pin) + ' for broken loop')
 
 while not rospy.is_shutdown():
     if not loop.value:
         do_stop()
-    sleep(0.5)
+    sleep(0.05)
 
