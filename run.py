@@ -33,7 +33,7 @@ alt_in  = None
 if hostpi is not None:
     factory = PiGPIOFactory(host=hostpi)
 
-loop = LineSensor(estop_pin, pin_factory=factory, threshold=threshold, sample_rate=sample_rate, queue_len=queue_len, pull_up=False)
+loop = LineSensor(estop_pin, pin_factory=factory, threshold=threshold, sample_rate=sample_rate, queue_len=queue_len)
 
 def do_stop():
     stop()
