@@ -1,6 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 
 import rospy
+
+import os
+os.environ['GPIOZERO_PIN_FACTORY'] = os.environ.get('GPIOZERO_PIN_FACTORY', 'mock')
+
 from gpiozero import LineSensor, Button, LED
 from gpiozero.pins.pigpio import PiGPIOFactory
 from std_srvs.srv import Empty
