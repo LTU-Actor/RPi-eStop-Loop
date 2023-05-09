@@ -34,6 +34,8 @@ if hostpi is not None:
     factory = PiGPIOFactory(host=hostpi)
 
 loop = LineSensor(estop_pin, pin_factory=factory, threshold=threshold, sample_rate=sample_rate, queue_len=queue_len)
+loop2 = LineSensor(estop_pin_alt, pin_factory=factory, threshold=threshold, sample_rate=sample_rate, queue_len=queue_len)
+
 
 def do_stop():
     stop()
@@ -44,14 +46,19 @@ if signal_pin is not None:
     loop.when_no_line = led.off
     loop.when_line = led.on
 
-if estop_pin_alt is not None:
-    alt_in = Button(estop_pin_alt, pin_factory=factory, bounce_time=0.01, pull_up=True)
-    alt_in.when_pressed = do_stop
+# if estop_pin_alt is not None:
+#     rospy.loginfo('setting up button for pin; ' + str(estop_pin_alt))
+#     alt_in = Button(estop_pin_alt, pin_factory=factory, bounce_time=0.01, pull_up=True)
+#     alt_in.when_pressed = do_stop
 
 rospy.loginfo('estop_loop watching pin ' + str(estop_pin) + ' for broken loop')
+rospy.loginfo('estop_pin_alt watching pin ' + str(estop_pin_alt) + ' for broken buttpn')
+
 
 while not rospy.is_shutdown():
     if not loop.value:
+        do_stop()
+    if not loop2.value:
         do_stop()
     sleep(0.05)
 
